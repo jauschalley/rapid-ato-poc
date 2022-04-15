@@ -1,0 +1,39 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./rapid-ato-api/data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  api:
+    build: 
+      context: ./rapid-ato-api/
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/rapid-ato-api/code
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+  frontend: 
+    build:
+      context: ./rapid-ato-frontend/
+      dockerfile: Dockerfile
+    volumes:
+      - './rapid-ato-frontend:/app'
+      - '/rapid-ato-frontend/node_modules'
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_ENDPOINT=http://localhost:3000
+      - REACT_APP_ENVIRONMENT=development
